@@ -280,6 +280,58 @@ def buscar_turma_nome(nome):
 
         return None
 
+def aluno_ja_almocou_hoje(aluno_id):
+
+    hoje = datetime.now().strftime("%Y-%m-%d")
+
+    with conectar() as conn:
+
+        cursor = conn.execute("""
+
+            SELECT COUNT(*)
+
+            FROM refeicoes
+
+            WHERE aluno_id = ?
+
+            AND data = ?
+
+        """, (aluno_id, hoje))
+
+        return cursor.fetchone()[0] > 0
+    
+def listar_refeicoes_periodo(data_inicial, data_final):
+
+    with conectar() as conn:
+
+        cursor = conn.execute("""
+
+            SELECT
+
+                a.matricula,
+                a.nome,
+                t.nome,
+                r.data,
+                r.hora
+
+            FROM refeicoes r
+
+            INNER JOIN alunos a
+
+                ON r.aluno_id = a.id_aluno
+
+            INNER JOIN turmas t
+
+                ON a.turma_id = t.id_turma
+
+            WHERE r.data BETWEEN ? AND ?
+
+            ORDER BY r.data, r.hora
+
+        """, (data_inicial, data_final))
+
+        return cursor.fetchall()
+
 # ======================================================
 # INICIALIZAÇÃO
 # ======================================================

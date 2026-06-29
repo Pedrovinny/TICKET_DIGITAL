@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 from src.banco import *
 
 import csv
@@ -81,8 +82,83 @@ def importar_csv(request):
 
 
 def leitor(request):
-    return render(request, "leitor.html")
+
+    mensagem = ""
+    cor = "secondary"
+    nome = ""
+
+    if request.method == "POST":
+
+        matricula = request.POST.get("matricula", "").strip()
+
+        aluno = buscar_aluno_matricula(matricula)
+
+        if aluno is None:
+
+            mensagem = "Aluno não encontrado."
+            cor = "danger"
+
+        else:
+
+            id_aluno = aluno[0]
+            nome = aluno[2]
+
+            if aluno_ja_almocou_hoje(id_aluno):
+
+                mensagem = "Aluno já retirou a refeição hoje."
+                cor = "warning"
+
+            else:
+
+                registrar_refeicao(id_aluno)
+
+                mensagem = "Pode retirar a refeição."
+                cor = "success"
+
+    return render(
+        request,
+        "leitor.html",
+        {
+            "mensagem": mensagem,
+            "cor": cor,
+            "nome": nome
+        }
+    )
 
 
 def relatorio(request):
+
+    if request.method == "POST":
+
+        data_inicial = request.POST["data_inicial"]
+        data_final = request.POST["data_final"]
+
+        registros = listar_refeicoes_periodo(
+            data_inicial,
+            data_final
+        )
+
+        response = HttpResponse(
+            content_type="text/csv"
+        )
+
+        response["Content-Disposition"] = (
+            f'attachment; filename="relatorio.csv"'
+        )
+
+        writer = csv.writer(response)
+
+        writer.writerow([
+            "Matricula",
+            "Nome",
+            "Turma",
+            "Data",
+            "Hora"
+        ])
+
+        for linha in registros:
+            writer.writerow(linha)
+
+        return response
+
     return render(request, "relatorio.html")
