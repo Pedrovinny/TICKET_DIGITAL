@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar CSV{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+            <h3>Importação de Alunos</h3>
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Arquivo CSV
+                    </label>
+
+                    <input
+                        class="form-control"
+                        type="file"
+                        name="arquivo"
+                        accept=".csv"
+                        required>
+
+                </div>
+
+                <button class="btn btn-success">
+
+                    Importar
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
